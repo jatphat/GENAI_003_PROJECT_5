@@ -18,7 +18,10 @@ st.write("This app provides easy-to-understand summaries of "
 
 
 input_type = st.session_state.input_type = st.selectbox(
-    "To get started, select your preferred input method:", ["Company Name", "URL"]
+    "To get started, select your preferred input method:",
+    ["Company Name", "URL"],
+    index = None,
+    placeholder = "Select input type",
     )
 
 input = st.text_input(f"Enter {input_type}:")
