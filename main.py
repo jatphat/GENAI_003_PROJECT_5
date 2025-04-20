@@ -6,6 +6,7 @@ import os
 from dotenv import load_dotenv
 from get_url import get_privacy_policy_url
 from scrape_text import scrape_text
+from summarize_text import summarize_long_text
 
 # ==========================
 # Section 1: Set up streamlit app
@@ -46,6 +47,15 @@ else:
 if privacy_policy_url:
     st.write("✅ Here is the URL I found:", privacy_policy_url)
     text = scrape_text(privacy_policy_url)
-    st.write("✅ Text from URL:", text)
+
+    if text:
+        with st.spinner("Analyzing risks using GPT..."):
+            summary = summarize_long_text(text)
+        st.subheader("⚠️ Privacy Risk Summary")
+        st.write(summary)
+
+        with st.expander("📄 Full Extracted Policy Text"):
+            st.write(text)
+
 
 
