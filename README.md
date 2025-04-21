@@ -67,21 +67,27 @@ Terms & Conditions are often too long and complex for the average user to read. 
    ```bash
    git clone https://github.com/NivethithaP-Rajan/GENAI_003_PROJECT_5.git
    cd GENAI_003_PROJECT_5
-
+    ```
 2. Install dependencies:
-
+   ```bash
     pip install -r requirements.txt
+    ```
 
     Add API keys in .env:
-
+    ```bash
     SERPER_API_KEY=your-key
     OPENAI_API_KEY=your-key
+    ```
 
 3. 🧪 Testing
+
+
 
 ---
 
 ## 🛠️ Known Issues / Contingencies
+
+
 
 
 ---
