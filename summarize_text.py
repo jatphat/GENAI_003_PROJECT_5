@@ -45,7 +45,8 @@ Low Risk:
 - The service may change its terms at any time
 """
 
-def summarize_long_text(text, model="gpt-4o", chunk_size=3000, max_tokens=500):
+# ---------- LLM Summary Function ----------
+def summarize_long_text(text, model="gpt-4o-mini", chunk_size=3000, max_tokens=500):
     """
     Summarizes long policy text into structured privacy risks using OpenAI API.
     """
@@ -89,3 +90,13 @@ def summarize_long_text(text, model="gpt-4o", chunk_size=3000, max_tokens=500):
         final_summary = "An error occurred while generating the final summary."
 
     return final_summary
+
+# ---------- Cached Summary Retrieval Function ----------
+def get_summary_for_tos(tos_url, tos_txt, cache_tool):
+    cached = cache_tool.get(tos_url)
+    if cached:
+        return cached["llm_summary"], True
+
+    summary = summarize_long_text(tos_txt)
+    cache_tool.add(tos_url, tos_txt, summary)
+    return summary, False
