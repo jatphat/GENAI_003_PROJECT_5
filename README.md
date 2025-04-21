@@ -39,13 +39,13 @@ Terms & Conditions are often too long and complex for the average user to read. 
 
 | Component | Tool |
 |----------|------|
-| **Frontend** | Glide / Bubble |
-| **Backend** | Python, FastAPI |
+| **Frontend** | Streamlit |
+| **Backend** | Python |
 | **Scraping** | Serper API, BeautifulSoup |
-| **LLM** | OpenAI GPT, Claude, or open-source alternatives |
-| **Cloud** | AWS EC2 / S3 / Lambda |
+| **LLM** | OpenAI GPT, Llama3 and open-source alternatives |
+| **Cloud** | TBD |
 | **Data Storage** | SQLite / JSON (MVP phase) |
-| **Collaboration** | GitHub, Figma, Google Docs |
+| **Collaboration** | GitHub, Google Docs |
 
 ---
 
@@ -65,8 +65,8 @@ Terms & Conditions are often too long and complex for the average user to read. 
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/terms-risk-analyzer.git
-   cd terms-risk-analyzer
+   git clone https://github.com/NivethithaP-Rajan/GENAI_003_PROJECT_5.git
+   cd GENAI_003_PROJECT_5
 
 2. Install dependencies:
 
