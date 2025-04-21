@@ -6,7 +6,8 @@ import os
 from dotenv import load_dotenv
 from get_url import get_privacy_policy_url
 from scrape_text import scrape_text
-from summarize_text import summarize_long_text
+from summarize_text import get_summary_for_tos
+from check_cache import LLMCacheTool
 
 # ==========================
 # Section 1: Set up streamlit app
@@ -50,7 +51,13 @@ if privacy_policy_url:
 
     if text:
         with st.spinner("Analyzing risks using GPT..."):
-            summary = summarize_long_text(text)
+            cache = LLMCacheTool()
+            summary, from_cache = get_summary_for_tos(privacy_policy_url, text, cache)
+            if from_cache:
+                st.info("✅ Retrieved summary from cache (less than 7 days old).")
+            else:
+                st.success("✅ Summary generated using GPT.")
+        
         st.subheader("⚠️ Privacy Risk Summary")
         st.write(summary)
 
