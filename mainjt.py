@@ -87,6 +87,57 @@ st.set_page_config(
     layout="wide"
 )
 
+# ✅ Unified CSS for compact layout and alignment
+st.markdown("""
+    <style>
+    /* Shrink block container padding */
+    .block-container {
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+
+    /* Tighten column content spacing */
+    .stColumn > div {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+
+    /* Reduce margin above/below headings */
+    h1, h2, h3, h4 {
+        margin-top: 0.25rem;
+        margin-bottom: 0.25rem;
+    }
+
+    /* Reduce space in expanders */
+    details summary {
+        font-size: 16px;
+        margin-bottom: 0;
+    }
+
+    /* Optional: Compact metrics */
+    div[data-testid="metric-container"] {
+        padding: 0.25rem;
+        margin: 0;
+    }
+
+    /* Align elements inside columns to the top */
+    .stColumn {
+        vertical-align: top;
+    }
+    /* Fix expander height so both columns align */
+    .stExpander {
+        min-height: 180px;
+    }
+    /* Optional: Prevent large gaps inside markdown boxes */
+    .stMarkdown {
+        margin-bottom: 0.5rem;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+
 # Custom CSS for risk colors
 st.markdown("""
     <style>
@@ -202,26 +253,37 @@ def calculate_risk_score(risks: Dict[str, List[str]]) -> int:
     return max(0, min(score, 100))
 
 def generate_recommendations(risks: Dict[str, List[str]], score: int) -> List[str]:
-    """Generate recommendations based on risks found"""
+    """Generate contextual recommendations based on risk keywords"""
     recommendations = []
-    
-    if len([r for r in risks['high'] if not r.startswith('No')]) > 0:
-        recommendations.append("🚨 Consider reviewing your data sharing preferences "
-                             "and opting out of third-party data sharing where possible.")
-    
-    if len([r for r in risks['medium'] if not r.startswith('No')]) > 0:
-        recommendations.append("⚠️ Review cookie and tracking settings in your browser "
-                             "and consider using privacy-enhancing browser extensions.")
-    
+
+    # 🚨 High-risk triggers
+    if any("sell" in r.lower() or "share" in r.lower() for r in risks['high']):
+        recommendations.append("🚨 Consider limiting data sharing by checking your privacy settings.")
+
+    if any("track" in r.lower() or "location" in r.lower() for r in risks['high']):
+        recommendations.append("📍 Disable location tracking in your account and device settings.")
+
+    if any("biometric" in r.lower() or "facial recognition" in r.lower() for r in risks['high']):
+        recommendations.append("🧬 Reconsider using services requiring biometric data without consent.")
+
+    # ⚠️ Medium-risk triggers
+    if any("cookie" in r.lower() or "ads" in r.lower() for r in risks['medium']):
+        recommendations.append("🍪 Install a cookie manager browser extension to reduce tracking.")
+
+    if any("analytics" in r.lower() for r in risks['medium']):
+        recommendations.append("📊 Use privacy-focused browsers or analytics blockers like uBlock Origin.")
+
+    # 📉 Score-based
     if score < 50:
-        recommendations.append("📊 This privacy policy has significant privacy risks. "
-                             "Consider using alternative services with better privacy practices.")
-    
+        recommendations.append("⚠️ Overall privacy score is low. Consider using an alternative service.")
+
+    # ✅ Default fallback
     if not recommendations:
-        recommendations.append("✅ This privacy policy appears to have reasonable data practices. "
-                             "Continue monitoring for any policy updates.")
-    
+        recommendations.append("✅ This privacy policy seems reasonable. No immediate action needed.")
+
     return recommendations
+
+
 
 # ==========================
 # Section 3: Analysis Functions
@@ -538,12 +600,17 @@ def format_summary_with_risks(summary: str, risks: Dict[str, List[str]]) -> str:
 
     return '. '.join(formatted_sentences)
 
-def display_risk_meter(score: int):
-    """Display an enhanced visual risk meter with context"""
+def display_risk_meter(score: int, risks: Dict[str, List[str]]):
+    """Display an enhanced visual risk meter with override for high-risk flags"""
     st.markdown("### Overall Privacy Risk Score")
+
+    has_high_risk = any(r for r in risks['high'] if not r.startswith('No'))
     
-    # Determine risk level and context
-    if score >= 70:
+    if has_high_risk:
+        color = "red"
+        message = "High Risk"
+        context = "This policy contains high-risk practices that may significantly impact your privacy."
+    elif score >= 70:
         color = "green"
         message = "Low Risk"
         context = "This policy appears to have good privacy practices."
@@ -556,27 +623,29 @@ def display_risk_meter(score: int):
         message = "High Risk"
         context = "This policy has significant privacy concerns that require attention."
 
-    # Create visual elements
+    # Visual elements
     col1, col2 = st.columns([2, 3])
-    
+
     with col1:
-        # Create progress bar
-        st.progress(score/100)
+        st.progress(score / 100)
         st.markdown(
-            f"<h2 style='color: {color}; text-align: center;'>{score}/100</h2>", 
+            f"<h2 style='color: {color}; text-align: center;'>{score}/100</h2>",
             unsafe_allow_html=True
         )
-    
+
     with col2:
         st.markdown(f"<h3 style='color: {color};'>{message}</h3>", unsafe_allow_html=True)
         st.write(context)
+
 
 def display_analysis(risks: Dict[str, List[str]], text: str):
     """Enhanced display with comprehensive risk analysis and recommendations"""
     try:
         # Calculate and display risk score
         score = calculate_risk_score(risks)
-        display_risk_meter(score)
+        
+        display_risk_meter(score, risks)
+
         
         # Display categorized risks
         st.markdown("### Detailed Risk Analysis")
@@ -618,11 +687,27 @@ def display_analysis(risks: Dict[str, List[str]], text: str):
                 st.markdown("<div class='risk-box'>✓ No low-risk items found</div>", 
                            unsafe_allow_html=True)
 
-        # Add recommendations
-        st.markdown("### Recommendations")
-        recommendations = generate_recommendations(risks, score)
-        for rec in recommendations:
-            st.info(rec)
+        # # Add recommendations
+        # st.markdown("### Recommendations")
+        # recommendations = generate_recommendations(risks, score)
+        # for rec in recommendations:
+        #     st.info(rec)
+        
+        # Add recommendations inside an expander for alignment and compact view
+        with st.expander("📌 Recommendations"):
+            # Add a wrapper div to enforce consistent height for alignment
+            st.markdown('<div style="min-height: 150px;">', unsafe_allow_html=True)
+
+            recommendations = generate_recommendations(risks, score)
+            if recommendations:
+                for rec in recommendations:
+                    st.info(rec)
+            else:
+                st.success("✅ No additional recommendations found.")
+
+            st.markdown('</div>', unsafe_allow_html=True)
+
+
 
         # Add privacy impact summary
         st.markdown("### Privacy Impact Summary")
@@ -745,8 +830,10 @@ def main():
                             if text:
                                 with st.spinner("Analyzing risks..."):
                                     cache = LLMCacheTool()
-                                    summary, from_cache = get_summary_for_tos(privacy_policy_url, text, cache)
-                                    risks = analyze_privacy_policy(text)
+                                    
+                                    summary, risks, from_cache = get_summary_for_tos(privacy_policy_url, text, cache)
+
+
                                     
                                     if from_cache:
                                         st.info("✅ Retrieved analysis from cache")
@@ -786,7 +873,9 @@ def main():
                         url1 = get_privacy_policy_url(os.getenv("API_KEY"), company1) if not company1.startswith('http') else company1
                         text1 = scrape_text(url1)
                         cache = LLMCacheTool()
-                        summary1, from_cache1 = get_summary_for_tos(url1, text1, cache)
+                        
+                        summary1, risks1, from_cache1 = get_summary_for_tos(url1, text1, cache)
+
                         risks1 = analyze_privacy_policy(text1)
                         st.success("✅ First policy analyzed")
                 except Exception as e:
@@ -800,67 +889,52 @@ def main():
                         url2 = get_privacy_policy_url(os.getenv("API_KEY"), company2) if not company2.startswith('http') else company2
                         text2 = scrape_text(url2)
                         cache = LLMCacheTool()
-                        summary2, from_cache2 = get_summary_for_tos(url2, text2, cache)
+                        
+                        summary2, risks2, from_cache2 = get_summary_for_tos(url2, text2, cache)
+
                         risks2 = analyze_privacy_policy(text2)
                         st.success("✅ Second policy analyzed")
                 except Exception as e:
                     st.error(f"Error analyzing second policy: {str(e)}")
             
-        if company1 and company2 and risks1 and risks2:  # Check if all variables are available
-            
-        # if company1 and company2:
+        if company1 and company2 and risks1 and risks2:
             st.subheader("Comparison Results")
-            
-            # Calculate scores
-            score1 = calculate_risk_score(risks1)
-            score2 = calculate_risk_score(risks2)
-            
-            # Display side-by-side comparison
-            comp_col1, comp_col2 = st.columns(2)
-            
-            with comp_col1:
-                st.markdown(f"### {company1}")
-                display_risk_meter(score1)
+
+            comparison_cols = st.columns(2)
+
+            with comparison_cols[0]:
+                st.markdown(f"### 🔍 [{company1}]({url1})")
                 display_analysis(risks1, text1)
-                
-            with comp_col2:
-                st.markdown(f"### {company2}")
-                display_risk_meter(score2)
+
+            with comparison_cols[1]:
+                st.markdown(f"### 🔍 [{company2}]({url2})")
                 display_analysis(risks2, text2)
-            
-            # Add comparison metrics
+
+            # Key Differences
             st.markdown("### Key Differences")
             diff_col1, diff_col2, diff_col3 = st.columns(3)
-            
+
             with diff_col1:
                 diff_high = len(risks1['high']) - len(risks2['high'])
-                st.metric("High Risk Items", 
-                         f"{len(risks1['high'])} vs {len(risks2['high'])}", 
-                         diff_high,
-                         delta_color="inverse")
-                
+                st.metric("High Risk Items", f"{len(risks1['high'])} vs {len(risks2['high'])}", diff_high, delta_color="inverse")
+
             with diff_col2:
                 diff_medium = len(risks1['medium']) - len(risks2['medium'])
-                st.metric("Medium Risk Items", 
-                         f"{len(risks1['medium'])} vs {len(risks2['medium'])}", 
-                         diff_medium,
-                         delta_color="inverse")
-                
+                st.metric("Medium Risk Items", f"{len(risks1['medium'])} vs {len(risks2['medium'])}", diff_medium, delta_color="inverse")
+
             with diff_col3:
                 diff_low = len(risks1['low']) - len(risks2['low'])
-                st.metric("Low Risk Items", 
-                         f"{len(risks1['low'])} vs {len(risks2['low'])}", 
-                         diff_low,
-                         delta_color="inverse")
-            
-            # Add overall comparison summary
+                st.metric("Low Risk Items", f"{len(risks1['low'])} vs {len(risks2['low'])}", diff_low, delta_color="inverse")
+
+            # Overall Conclusion
             st.markdown("### Overall Comparison")
             if score1 > score2:
                 st.success(f"🏆 {company1} has better privacy practices (Score: {score1} vs {score2})")
             elif score2 > score1:
                 st.success(f"🏆 {company2} has better privacy practices (Score: {score2} vs {score1})")
             else:
-                st.info("Both policies have similar privacy practices")
+                st.info("Both policies have similar privacy practices.")
+
 
 if __name__ == "__main__":
     try:

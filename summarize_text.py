@@ -91,12 +91,44 @@ def summarize_long_text(text, model="gpt-4o-mini", chunk_size=3000, max_tokens=5
 
     return final_summary
 
+
+def extract_risks_from_summary(summary: str) -> dict:
+    """
+    Extract high, medium, and low risk items from the LLM summary text.
+    Returns a dictionary with keys: 'high', 'medium', and 'low'.
+    """
+    risks = {'high': [], 'medium': [], 'low': []}
+    current_risk = None
+
+    for line in summary.splitlines():
+        line = line.strip()
+
+        if line.lower().startswith("high risk:"):
+            current_risk = 'high'
+        elif line.lower().startswith("warnings:") or line.lower().startswith("medium risk:"):
+            current_risk = 'medium'
+        elif line.lower().startswith("low risk:"):
+            current_risk = 'low'
+        elif line.startswith("- ") or line.startswith("• "):
+            if current_risk:
+                risks[current_risk].append(line.lstrip("-• ").strip())
+
+    for level in risks:
+        if not risks[level]:
+            risks[level].append(f"No {level}-risk items identified")
+
+    return risks
+
+
 # ---------- Cached Summary Retrieval Function ----------
 def get_summary_for_tos(tos_url, tos_txt, cache_tool):
     cached = cache_tool.get(tos_url)
     if cached:
-        return cached["llm_summary"], True
+        summary = cached["llm_summary"]
+        risks = extract_risks_from_summary(summary)
+        return summary, risks, True
 
     summary = summarize_long_text(tos_txt)
+    risks = extract_risks_from_summary(summary)
     cache_tool.add(tos_url, tos_txt, summary)
-    return summary, False
+    return summary, risks, False
