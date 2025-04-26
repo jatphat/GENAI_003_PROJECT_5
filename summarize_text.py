@@ -12,41 +12,82 @@ client = OpenAI(api_key=openai_api_key)
 
 # Few-shot prompt to guide GPT behavior
 FEW_SHOT_EXAMPLES = """
-You are a data privacy auditor AI. Summarize the privacy risks mentioned in the text below, and group them into three categories: High Risk, Warnings, and Low Risk.
+You are a highly specialized Data Privacy Risk Auditor AI.
 
-Only extract risks related to **data privacy** and **user data usage**. Do not include general terms, contact info, or formatting instructions.
+Your task is to read the provided privacy policy text, and **strictly extract privacy-related risks only**. You must classify the extracted risks into **three risk levels**:
+- High Risk
+- Medium Risk
+- Low Risk
 
-Format the output as:
+You must always return **all three categories**, even if there are no findings (e.g., say "No high risk items identified").
+
+### How to Classify Risks:
+**High Risk**:
+- Sharing or selling personal data to third parties without consent
+- Collecting sensitive data (biometric, location, financial)
+- Claiming unlimited rights to user content, waiving moral rights
+- Retaining data after account deletion without user control
+- Lack of user notification for changes to policies
+- Potential for data misuse, unauthorized access, surveillance
+
+**Medium Risk**:
+- Use of cookie tracking and analytics services
+- Profiling users for marketing and advertising
+- Collection of information for non-essential purposes
+- Use of tracking pixels or social media integration
+- Retention of usage statistics and behavior data
+
+**Low Risk**:
+- Collection of basic account information (email, username)
+- Customer service communications
+- Implementation of encryption and security measures
+- Use of essential cookies for website functionality
+- Collection of technical maintenance data (device info)
+
+---
+
+### Output Format (Strict):
 
 High Risk:
-- Risks where there is a threat to the user's data being used or held without consent, including loss, misuse, or alteration, data being sold to third parties and the identity of the user being compromised. 
+- [list *all* high risk items found, one per line, even if many]
+- [continue listing all detected high risk summaries]
+(...or say "No high risk items identified")
 
-Warnings:
-- Risks where the service collects personal data and very limited rights for the user, in case of disputes.
+Medium Risk:
+- [list *all* medium risk items found, one per line, even if many]
+(...or say "No medium risk items identified")
 
 Low Risk:
-- Risks of the onus of the data is only with the user, and any other risks not included in the above categories.
+- [list *all* low risk items found, one per line, even if many]
+(...or say "No low risk items identified")
 
-Examples:
+---
+
+### Examples:
 
 High Risk:
-- You waive your moral rights 
-- This service still tracks you even if you opted out from tracking
-- This service may keep personal data after a request for erasure for business interests or legal obligations
+- The company shares user data with third parties without explicit consent.
+- Biometric data like facial recognition information is collected without opt-out options.
+- Sensitive location data is tracked continuously without clear purpose.
+- User-generated content is granted perpetual and unlimited license rights.
 
-Warnings:
-- You must provide your identifiable information
-- This service can share your personal information to third parties
-- This service forces users into binding arbitration in the case of disputes
+Medium Risk:
+- The service uses cookies and analytics tools to track user behavior.
+- User profiles are built for targeted advertising.
+- Usage statistics are retained for unspecified periods.
 
 Low Risk:
-- Users agree not to use the service for illegal purposes
-- Third parties may be involved in operating the service
-- The service may change its terms at any time
+- Basic account information like email addresses is collected for account creation.
+- Essential security measures like data encryption are mentioned.
+- Device information is collected for technical troubleshooting.
+
+---
+
+Now, summarize and classify the following privacy policy text:
 """
 
 # ---------- LLM Summary Function ----------
-def summarize_long_text(text, model="gpt-4o-mini", chunk_size=3000, max_tokens=500):
+def summarize_long_text(text, model="gpt-4o-mini", chunk_size=3000, max_tokens=800):
     """
     Summarizes long policy text into structured privacy risks using OpenAI API.
     """
