@@ -66,7 +66,9 @@ Low Risk:
 """
 
 # Helper function to call LLaMA via Together.ai API
-def llama_chat(prompt: str, model="togethercomputer/llama-2-13b-chat", temperature=0.3, max_tokens=800):
+# def llama_chat(prompt: str, model="togethercomputer/llama-2-7b-chat", temperature=0.3, max_tokens=800):
+def llama_chat(prompt: str, model="mistralai/Mixtral-8x7B-Instruct-v0.1", temperature=0.3, max_tokens=800):
+
     url = "https://api.together.xyz/v1/chat/completions"
     headers = {
         "Authorization": f"Bearer {TOGETHER_API_KEY}",
@@ -78,12 +80,20 @@ def llama_chat(prompt: str, model="togethercomputer/llama-2-13b-chat", temperatu
         "temperature": temperature,
         "max_tokens": max_tokens
     }
-    response = requests.post(url, json=body, headers=headers)
-    response.raise_for_status()
-    return response.json()["choices"][0]["message"]["content"]
+    try:
+        response = requests.post(url, json=body, headers=headers)
+        response.raise_for_status()
+        return response.json()["choices"][0]["message"]["content"]
+    except requests.exceptions.HTTPError as e:
+        print("HTTP Error:", e.response.text)
+        raise
+    except Exception as e:
+        print("Error during llama_chat:", str(e))
+        raise
+
 
 # ---------- LLM Summary Function ----------
-def summarize_long_text(text, model="togethercomputer/llama-2-13b-chat", chunk_size=3000, max_tokens=800):
+def summarize_long_text(text, model="togethercomputer/llama-2-13b-chat", chunk_size=1500, max_tokens=800):
     chunks = textwrap.wrap(text, chunk_size)
     chunk_summaries = []
 
