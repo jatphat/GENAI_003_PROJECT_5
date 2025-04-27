@@ -3,13 +3,11 @@
 # ==========================
 import streamlit as st
 import os
-import textwrap
 from dotenv import load_dotenv
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 import requests
 from typing import Dict, List, Tuple
-import openai
 from get_url import get_privacy_policy_url
 from check_cache import LLMCacheTool
 from summarize_text_llama import get_summary_for_tos, extract_risks_from_summary
@@ -60,10 +58,9 @@ Now carefully review and classify the following policy text:
 
 def configure():
     load_dotenv()
-    api_key = os.getenv("OPENAI_API_KEY")
+    api_key = os.getenv("TOGETHER_API_KEY")
     if not api_key:
-        raise ValueError("OPENAI_API_KEY not found in .env")
-    openai.api_key = api_key
+        raise ValueError("TOGETHER_API_KEY not found in environment variables")
 
 # ==========================
 # Section 3: Helper Functions
@@ -101,7 +98,6 @@ def calculate_privacy_score(risks: Dict[str, List[str]]) -> int:
     adjusted_score = 100 - (penalty_ratio * 100)
     return max(0, int(adjusted_score))
 
-
 # ==========================
 # Section 4: Streamlit App
 # ==========================
@@ -111,8 +107,6 @@ def main():
     st.title("LegalLens ⚖️")
     st.subheader("Analyze Privacy Policies for Risks")
 
-   
-    
     with st.sidebar:
         st.header("Privacy Metrics")
         
@@ -140,7 +134,6 @@ def main():
         Overall score is based on the proportion and severity of identified risks.
         Policies with fewer and lower risks get higher scores.
         """)
-
 
     tab1, tab2 = st.tabs(["Single Analysis", "Compare Policies"])
 
