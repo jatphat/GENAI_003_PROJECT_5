@@ -105,7 +105,7 @@ def summarize_long_text(text, model="togethercomputer/llama-2-13b-chat", chunk_s
         final_summary = llama_chat(final_prompt, model=model, max_tokens=max_tokens)
     except Exception as e:
         print(f"Error creating final summary: {e}")
-        final_summary = "An error occurred while generating the final summary."
+        final_summary = "An error occurred during summarization. Please try again later."
 
     return final_summary
 
