@@ -20,7 +20,7 @@ import openai
 # from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
 # import torch
 import numpy as np
-from textblob import TextBlob
+# from textblob import TextBlob
 
 # Global variables
 BERT_MODEL = None
