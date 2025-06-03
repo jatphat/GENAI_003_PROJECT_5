@@ -66,9 +66,9 @@ Low Risk:
 """
 
 # Helper function to call LLaMA via Together.ai API
-# def llama_chat(prompt: str, model="togethercomputer/llama-2-7b-chat", temperature=0.3, max_tokens=800):
+def llama_chat(prompt: str, model="togethercomputer/llama-2-7b-chat", temperature=0.3, max_tokens=800):
 # def llama_chat(prompt: str, model="mistralai/Mixtral-8x7B-Instruct-v0.1", temperature=0.3, max_tokens=800):
-def llama_chat(prompt: str, model="togethercomputer/RedPajama-INCITE-Chat-3B-v1", temperature=0.3, max_tokens=800):
+# def llama_chat(prompt: str, model="togethercomputer/RedPajama-INCITE-Chat-3B-v1", temperature=0.3, max_tokens=800):
 
 
     url = "https://api.together.xyz/v1/chat/completions"
