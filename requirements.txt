@@ -1,11 +1,12 @@
-streamlit
-openai
-transformers>=4.30.0
-torch
-textblob
-beautifulsoup4
-requests
-python-dotenv
-pandas
-numpy
-tensorflow
+--extra-index-url https://download.pytorch.org/whl/cpu
+streamlit==1.33.0
+openai==1.30.1
+transformers==4.39.3
+torch==2.1.2+cpu
+tensorflow-cpu==2.14.0
+textblob==0.18.0
+beautifulsoup4==4.12.3
+requests==2.31.0
+python-dotenv==1.0.1
+pandas==2.2.2
+numpy==1.26.4
