@@ -22,6 +22,12 @@ import torch
 import numpy as np
 from textblob import TextBlob
 
+# ✅ Patch to prevent Streamlit from inspecting torch.classes
+import sys
+import types
+torch.classes = types.SimpleNamespace()
+sys.modules['torch.classes'] = torch.classes
+
 # Global variables
 BERT_MODEL = None
 MAX_TEXT_LENGTH = 10000
