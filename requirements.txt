@@ -9,3 +9,4 @@ python-dotenv
 pandas
 numpy
 tensorflow==2.17.1
+textwrap3

@@ -17,7 +17,8 @@ import re
 from get_url import get_privacy_policy_url
 from summarize_text import get_summary_for_tos
 from check_cache import LLMCacheTool
-import openai
+from openai import OpenAI
+
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
 import torch
 import numpy as np
@@ -54,13 +55,14 @@ def check_requirements():
 #         response = openai.ChatCompletion.create(...)
 #     except Exception as e:
 #         st.error(f"OpenAI error: {e}")
-def configure():
-    """Load environment variables and initialize API keys"""
-    openai.api_key = st.secrets["OPENAI_API_KEY"]
 
-    # Optional: test OpenAI connectivity immediately
+def configure():
+    """Initialize OpenAI API key using new SDK (v1.x)"""
     try:
-        response = openai.ChatCompletion.create(
+        client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+
+        # Optional: simple connectivity check
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
@@ -68,7 +70,8 @@ def configure():
             ],
             max_tokens=5,
         )
-        st.write("OpenAI connectivity check passed.")
+        st.write("✅ OpenAI connectivity check passed.")
+        st.session_state.openai_client = client  # 🔐 Store for later use
     except Exception as e:
         st.error(f"OpenAI error: {e}")
 
@@ -912,8 +915,9 @@ def main():
                                 with st.spinner("Analyzing risks..."):
                                     cache = LLMCacheTool()
                                     
-                                    summary, risks, from_cache = get_summary_for_tos(privacy_policy_url, text, cache)
-
+                                    # summary, risks, from_cache = get_summary_for_tos(privacy_policy_url, text, cache)
+                                    summary, risks, from_cache = get_summary_for_tos(privacy_policy_url, text, cache, client=st.session_state.openai_client
+)
 
                                     
                                     if from_cache:
@@ -988,7 +992,9 @@ def main():
                         text1 = scrape_text(url1)
                         cache = LLMCacheTool()
                         
-                        summary1, risks1, from_cache1 = get_summary_for_tos(url1, text1, cache)
+                        # summary1, risks1, from_cache1 = get_summary_for_tos(url1, text1, cache)
+                        summary1, risks1, from_cache1 = get_summary_for_tos(url1, text1, cache, client=st.session_state.openai_client
+)
                         st.success("✅ First policy analyzed")
                 except Exception as e:
                     st.error(f"Error analyzing first policy: {str(e)}")
@@ -1003,7 +1009,9 @@ def main():
                         text2 = scrape_text(url2)
                         cache = LLMCacheTool()
 
-                        summary2, risks2, from_cache2 = get_summary_for_tos(url2, text2, cache)
+                        # summary2, risks2, from_cache2 = get_summary_for_tos(url2, text2, cache)
+                        summary2, risks2, from_cache2 = get_summary_for_tos(url2, text2, cache, client=st.session_state.openai_client
+)
                         if risks1 and risks2:
                             score1 = calculate_privacy_score(risks1)
                             score2 = calculate_privacy_score(risks2)
