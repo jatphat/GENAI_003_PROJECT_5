@@ -4,6 +4,7 @@
 # ==========================
 # Section 0: Import libraries
 # ==========================
+import torch_patch  
 import streamlit as st
 import os
 from dotenv import load_dotenv
