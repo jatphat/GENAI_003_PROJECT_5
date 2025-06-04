@@ -55,13 +55,20 @@ def check_requirements():
 #         response = openai.ChatCompletion.create(...)
 #     except Exception as e:
 #         st.error(f"OpenAI error: {e}")
-
+ 
+      
 def configure():
-    """Initialize OpenAI API key using new SDK (v1.x)"""
-    try:
-        client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+    """Initialize OpenAI API key using new SDK (v1.x) with local/Streamlit fallback"""
+    from dotenv import load_dotenv
+    load_dotenv()
 
-        # Optional: simple connectivity check
+    try:
+        # ✅ Use Streamlit secret if present, fallback to local .env
+        api_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY"))
+        client = OpenAI(api_key=api_key)
+         # client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+
+        # ✅ Optional: test API connectivity
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
@@ -71,9 +78,10 @@ def configure():
             max_tokens=5,
         )
         st.write("✅ OpenAI connectivity check passed.")
-        st.session_state.openai_client = client  # 🔐 Store for later use
+        st.session_state.openai_client = client  # 🔐 Store client globally in session
     except Exception as e:
         st.error(f"OpenAI error: {e}")
+        
 
 def get_bert_model():
     """Initialize or retrieve cached BERT model"""
