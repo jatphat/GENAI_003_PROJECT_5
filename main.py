@@ -45,11 +45,32 @@ def check_requirements():
         st.info("Please install required packages: pip install transformers torch textblob")
         st.stop()
 
+# def configure():
+#     """Load environment variables and initialize API keys"""
+#     # load_dotenv()
+#     # openai.api_key = os.getenv("OPENAI_API_KEY")
+#     openai.api_key = st.secrets["OPENAI_API_KEY"]
+#     try:
+#         response = openai.ChatCompletion.create(...)
+#     except Exception as e:
+#         st.error(f"OpenAI error: {e}")
 def configure():
     """Load environment variables and initialize API keys"""
-    # load_dotenv()
-    # openai.api_key = os.getenv("OPENAI_API_KEY")
     openai.api_key = st.secrets["OPENAI_API_KEY"]
+
+    # Optional: test OpenAI connectivity immediately
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": "Hello!"}
+            ],
+            max_tokens=5,
+        )
+        st.write("OpenAI connectivity check passed.")
+    except Exception as e:
+        st.error(f"OpenAI error: {e}")
 
 def get_bert_model():
     """Initialize or retrieve cached BERT model"""
