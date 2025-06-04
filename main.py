@@ -47,8 +47,9 @@ def check_requirements():
 
 def configure():
     """Load environment variables and initialize API keys"""
-    load_dotenv()
-    openai.api_key = os.getenv("OPENAI_API_KEY")
+    # load_dotenv()
+    # openai.api_key = os.getenv("OPENAI_API_KEY")
+    openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 def get_bert_model():
     """Initialize or retrieve cached BERT model"""
